@@ -89,3 +89,21 @@ Can You Access It?
 Yes, you can usually access the router’s OS through a web-based interface or sometimes via a command-line interface (CLI).
 Example: Open a browser and type 192.168.0.1 or 192.168.1.1 to log into your router’s admin panel.
 Note: The features and level of access depend on the router’s make and model.
+
+2. How does a router manage data traffic?
+Routers manage data traffic by directing data packets between devices within a network and between different networks (such as your home network and the internet). Here’s how they do it:
+
+Packet Forwarding: Routers receive data packets from a device (like your computer or smartphone) and forward them to their destination. The router examines the packet's destination address and uses routing tables to determine the best path to forward the packet.
+Routing Tables: Routers maintain a routing table, which is like a map of network destinations and the best next hop to reach them. This table helps the router determine where to send packets based on their destination IP addresses.
+Traffic Management: Routers can manage traffic using Quality of Service (QoS) settings to prioritize certain types of traffic (e.g., video calls or gaming) over others (e.g., downloading large files).
+Network Address Translation (NAT): Routers also use NAT to share a single public IP address across multiple devices in a local network by assigning them private IP addresses.
+3. Why does a router assign IP addresses to devices, and why use private IPs instead of public IPs?
+A router assigns IP addresses to devices for several reasons:
+
+Device Identification: Each device on a network must have a unique IP address so that data can be properly routed to the correct device. This is like giving each device a unique "home address."
+
+Why Private IP Addresses?
+
+Limited Public IP Addresses: There are a limited number of public IP addresses available (due to the IPv4 address space). Using private IP addresses helps conserve public IP addresses, as a single public IP address can be shared by multiple devices within a local network.
+Network Security: Private IP addresses are not directly accessible from the internet. This provides a layer of security since devices with private IP addresses cannot be directly reached from the outside world.
+Network Address Translation (NAT): Routers use NAT to map private IP addresses to a single public IP address. This allows many devices in a local network (such as your home Wi-Fi network) to access the internet using just one public IP address, while still allowing communication between devices within the local network.
