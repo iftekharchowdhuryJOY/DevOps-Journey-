@@ -1,0 +1,28 @@
+- locate passwd
+- locate image
+- locate -i messages
+- locate -n 5 snow.png
+- find / -name sshd_config
+- find / -name '*.txt'
+- find /etc -name '*pass*'
+- find / -iname '*messages*'
+- find -user user
+- find -group user
+- find -uid 1000
+- find -gid 1000
+- find / -user root -group mail
+- find /home -perm 764
+- find /home -perm -324
+- find /home -perm /442
+- find -perm -002
+- find -perm -004
+- find -size 10M
+- find -size +10G
+- find -size -10k
+- find / -mmin 120
+- find / -mmin +200
+- find / -mmin -150
+- find /etc -type d
+- find / -type l
+- find /dev -type b
+- find / -type -links +1
