@@ -100,4 +100,27 @@ Set up GitHub Pages:
 - Scroll to the Pages section.
 - Choose a branch or folder to host your site.
 - Customize your domain or use the default GitHub-provided URL.
+## What is main?
+In Git and GitHub, **main is the default branch name for a repository**. It serves as the primary branch where the most stable version of your code resides.
+## vKey Points About main:
+1. Default Branch: When you create a new repository, GitHub automatically creates a branch named main (unless you specify otherwise).
+It is the branch where changes are merged and typically represents the production-ready state of the project.<br/>
+## Why main Instead of master?
+Historically, Git used master as the default branch name. In 2020, GitHub and other platforms adopted main as the default branch name to promote inclusive terminology.The functionality remains the same—it's just a name change.
+
+## Role of main: 
+It acts as the central point of reference in your repository. Developers usually branch out from main to work on features or fixes and then merge the changes back into it.
+
+## Managing main: 
+To ensure the stability of the code, it's common to restrict direct commits to the main branch. Teams often use pull requests to review and merge changes into main.
+
+### Switching Default Branch:
+
+You can rename main to any other name (e.g., master, develop, etc.) and set another branch as default in GitHub settings.
+
+- Switch to main: git checkout -b main
+- Push changes to main: git push origin main
+- Merge a branch into main: git checkout main, git merge <branch-name>
+- Pull latest changes from main: git pull origin main
+
 
