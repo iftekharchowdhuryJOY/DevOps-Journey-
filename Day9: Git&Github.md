@@ -123,4 +123,7 @@ You can rename main to any other name (e.g., master, develop, etc.) and set anot
 - Merge a branch into main: git checkout main, git merge <branch-name>
 - Pull latest changes from main: git pull origin main
 
+## Authenticate and authorize user identities on GitHub
+
+
 
