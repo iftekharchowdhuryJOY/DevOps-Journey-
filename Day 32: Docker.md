@@ -89,3 +89,112 @@ docker run -d \
   my-node-app
 ```
 ## Container Networking
+## Default Networking: Bridge Network
+By default, containers are connected to the default bridge network.
+They can communicate with each other using container IP addresses, but this network is isolated from the host.
+
+## Creating Custom Networks
+```
+docker network create my-network
+docker run -d --name app1 --network my-network my-node-app
+docker run -d --name app2 --network my-network my-node-app
+docker network ls
+docker network inspect my-network
+```
+### Example Scenario: Persistent Data and Networking Together
+Imagine you have a web application that writes logs to a file and needs to be accessed from the host:
+```
+docker volume create app-logs
+docker run -d \
+  -p 8080:80 \
+  -v app-logs:/var/log/app \
+  --name web-app \
+  my-web-app-image
+```
+You can inspect the logs stored in the app-logs volume by mounting it into another container or accessing it directly on the Docker host (if you know the volume path).
+
+## Docker Compose & Orchestration
+Docker Compose is a tool that allows you to define and run multi-container Docker applications. With Compose, you use a YAML file to configure your application’s services, networks, and volumes. Then, with a single command, you can create and start all the services from your configuration.
+
+## Key Benefits
+* Multi-Container Management: Easily run, scale, and connect multiple containers.
+* Service Definition: Define services (e.g., web, database, cache) in one file.
+* Environment Reproducibility: Ensure that your application runs the same way across different environments.
+
+## Basic Docker Compose File
+Here’s a simple example for a web application that includes a web service and a database service:
+
+```
+version: "3.8"  # Specify the Compose file format version
+
+services:
+  web:
+    build: ./web   # Build from the Dockerfile in the ./web directory
+    ports:
+      - "8080:80"  # Map host port 8080 to container port 80
+    volumes:
+      - ./web/app:/app  # Bind mount for live code changes
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - db
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=example
+      - POSTGRES_PASSWORD=example
+      - POSTGRES_DB=exampledb
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
+
+```
+
+## Explanation:
+
+* version: Indicates the version of the Compose file format.
+*services:
+## web:
+```
+build: Tells Compose to build an image from the Dockerfile in the ./web directory.
+ports: Maps container ports to host ports.
+volumes: Mounts a host directory (./web/app) into the container.
+environment: Sets environment variables.
+depends_on: Specifies service dependencies (ensuring the database starts before the web service).
+```
+## db:
+```
+Uses an official PostgreSQL image.
+Sets up necessary environment variables for database initialization.
+Uses a named volume (db-data) for data persistence.
+volumes: Defines a named volume that Docker will manage.
+```
+## Basic Docker Compose Commands
+```
+start services: docker-compose up
+stop services: docker-compose down
+view logs: docker-compose logs
+To follow logs in real time, use: docker-compose logs -f
+Rebuild Services: If you’ve made changes to your Dockerfile or code: docker-compose up --build
+Scale Services: For example, to scale the web service to 3 instances: docker-compose up -d --scale web=3
+
+```
+
+## Advanced Topics & Best Practices
+1. Run as Non-Root:
+* Avoid running processes as the root user inside your containers.
+* Use the USER directive in your Dockerfile to switch to a less-privileged user.
+
+2. Minimize Attack Surface:
+* Use minimal base images (e.g., Alpine or slim versions) to reduce vulnerabilities.
+* Remove unnecessary packages and dependencies.
+* Clean up temporary files and caches after installing dependencies: RUN apk add --no-cache <package> && rm -rf /var/cache/apk/*
+
+3. Image Vulnerability Scanning:
+
+Integrate tools like Clair, Anchore, or Docker's built-in scanning features to identify vulnerabilities.
+Regularly update base images and dependencies.
+
