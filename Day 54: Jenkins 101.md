@@ -60,6 +60,12 @@ sudo systemctl status jenkins
 6. Customizing Jenkins with plugins
 If you are unsure what plugins you need, choose Install suggested plugins.
 
+Jenkins is a powerful orchestrator, but it doesn't know how to do everything itself. It needs plugins to handle specific tasks, like:
 
+- Talking to your code repository (the Git plugin)
+- Building your code with specific tools (like Maven or Gradle plugins)
+- Sending you a notification on Slack or via email
+
+Now, after those plugins finish installing, Jenkins finally takes you to that main dashboard. It's empty, but ready for instructions.
  
  
