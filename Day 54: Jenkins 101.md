@@ -159,6 +159,22 @@ pipeline {
 }
 
 ```
+# The Power of Plugins
+Think of a brand new smartphone. Out of the box, it can make calls, send texts, and browse the internet. It has the basic functions. But its real power comes from the App Store. When you want to navigate somewhere, you install Google Maps. When you want to listen to music, you install Spotify.
+
+Jenkins works exactly the same way:
+
+- Base Jenkins is the smartphone. It knows how to run jobs and orchestrate pipelines.
+- Plugins are the apps you install to give Jenkins new powers.
+- When you first set up Jenkins, you already did this when you chose "Install suggested plugins". You were installing the "apps" needed for common tasks!
+- When you install a plugin, it gives you new commands (or steps) that you can use in your Jenkinsfile.
+
+For example:
+
+- To get code from GitHub, you need the Git Plugin, which gives you a git step.
+- To build a Java project with Maven, you need the Maven Plugin, which gives you tools for running Maven commands.
+- To send a notification to a Slack channel, you need the Slack Plugin, which gives you a slackSend step.
+- So, the steps block in your Jenkinsfile might look like this with plugins:
 
 
 
