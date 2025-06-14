@@ -177,7 +177,15 @@ For example:
 - So, the steps block in your Jenkinsfile might look like this with plugins:
 
 
+```Groovy
+steps {
+    // This 'git' step comes from the Git Plugin
+    git 'https://github.com/your-repo/your-project.git'
 
+    // This 'sh' step is a basic command to run a Maven build
+    sh './mvnw clean install'
+}
+```
 
 
 
