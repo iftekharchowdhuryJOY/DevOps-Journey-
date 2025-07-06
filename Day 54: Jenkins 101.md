@@ -247,9 +247,9 @@ post {
 * Test Results Trend: Graph of pass/fail over time (Jenkins UI → Job → "Test Result Trend").
 * Detailed Reports: Click individual builds to see which tests failed.
 
-**No more manual testing:** Jenkins runs tests on every commit.
-**Catch bugs early**: Before they reach production.
-**Team transparency**: Everyone sees test results in Jenkins.
+1. **No more manual testing:** Jenkins runs tests on every commit.
+2. **Catch bugs early**: Before they reach production.
+3. **Team transparency**: Everyone sees test results in Jenkins.
 
 
 
