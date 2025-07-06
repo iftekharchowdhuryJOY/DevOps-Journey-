@@ -186,8 +186,15 @@ steps {
     sh './mvnw clean install'
 }
 ```
+# Where Jenkins Stores Logs
 
+1. Path: ```bash /var/lib/jenkins/jobs/<JOB_NAME>/builds/<BUILD_NUMBER>/log```
+2. Example /var/lib/jenkins/jobs/flask ci-cd/builds/1
 
+# Key Takeaways
+1. Logs: Stored in jobs/<JOB>/builds/<NUMBER>/log.
+2. Workspace: Temporary directory for code (/workspace/<JOB>).
+3. Access: Use UI, CLI, or archiveArtifacts to save logs.
 
 
 
