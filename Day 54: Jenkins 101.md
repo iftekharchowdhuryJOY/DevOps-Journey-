@@ -197,10 +197,59 @@ steps {
 3. Access: Use UI, CLI, or archiveArtifacts to save logs.
 
 
+# What Are Test Cases in Jenkins?
+Test cases in Jenkins refer to automated checks (usually unit/integration tests) that validate your code works as expected. They are not a Jenkins feature—they’re your own tests (written in frameworks like pytest, JUnit, Jest, etc.) that Jenkins runs and reports on.
+# Example Test Cases (Python)
+```python
+# test_math.py (A simple pytest test file)
+def test_add():
+    assert 1 + 1 == 2   # Passes
 
+def test_fail():
+    assert 2 * 2 == 5   # Fails (intentionally)
+```
+# How Jenkins Handles Test Cases
+Jenkins executes your tests (via sh, bat, or plugins) and records results. Key components:
+a) Running Tests
+In your Jenkinsfile:
+```groovy
+stage('Test') {
+    steps {
+        sh 'pytest test_math.py'  // Runs Python tests
+        // OR for Java:
+        sh 'mvn test'             // Runs JUnit tests
+    }
+}
+```
+# Test Reports
+Jenkins collects results from test frameworks:
 
+* JUnit (Java/Kotlin): mvn test generates target/surefire-reports/*.xml.
 
+* pytest (Python): pytest --junitxml=report.xml generates XML reports.
 
+* Jest (JavaScript): jest --ci --reporters=default --reporters=jest-junit.
+
+Configure Jenkins to publish reports:
+```groovy
+post {
+    always {
+        junit '**/test-results.xml'  // Publishes test results to Jenkins UI
+    }
+}
+```
+# What Does "Test Pass/Fail" Mean in Jenkins?
+* Pass: All tests ran successfully (exit code 0 + no failures in reports).
+* Fail: At least one test failed (exit code ≠0 or XML report shows failures).
+
+# Where to See Results
+* Console Output: Raw logs of test execution.
+* Test Results Trend: Graph of pass/fail over time (Jenkins UI → Job → "Test Result Trend").
+* Detailed Reports: Click individual builds to see which tests failed.
+
+**No more manual testing:** Jenkins runs tests on every commit.
+**Catch bugs early**: Before they reach production.
+**Team transparency**: Everyone sees test results in Jenkins.
 
 
 
