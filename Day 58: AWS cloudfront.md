@@ -74,3 +74,74 @@ Problem: A WordPress site hosted in the US loads slowly in India (~4s).
 - Users in India now get content locally (~0.8s load time).
 - Server load drops by 70%, reducing hosting costs.
 Result: Happier users, better SEO (Google ranks faster sites higher), and lower bills.
+
+# Cloudfront Geo-restrictions
+Geo-Restrictions allow you to block or allow users from specific countries from accessing your content via CloudFront.
+
+# CloudFront Pricing Overview
+## What You Pay For:
+- Data Transfer Out (per GB, varies by region)
+Example: Delivering 1TB/month in North America ≈ $85
+
+- HTTP/HTTPS Requests (per 10,000 requests): Example: 1M requests ≈ $0.75
+- Invalidations (First 1,000 paths free/month, then $0.005/invalidation)
+- DDoS Protection (AWS Shield Standard: Free, Advanced: $3,000+/month)
+
+# What is Multiple Origins?
+Route different requests to different backend servers (e.g., APIs to EC2, static files to S3).
+
+## Example Setup:
+
+1. /api/* → ALB (EC2 backend)
+2. /images/* → S3 bucket
+3. Default (/*) → Another S3 bucket
+## Use Case:
+A Next.js app with:
+
+- Static pages (S3)
+- API routes (Lambda)
+- Uploads (Separate S3 bucket)
+
+# What is Origin Groups (Failover)
+Automatically switch to a backup origin if the primary fails (like a standby server).
+## How It Works:
+1. Primary Origin: primary-bucket.s3.amazonaws.com
+2. Secondary Origin: backup-bucket.s3.amazonaws.com
+3. CloudFront checks primary’s health; if it returns 5xx errors, traffic shifts to secondary.
+
+## Use Case:
+- High-availability news site where downtime is unacceptable.
+
+## Field-level Encryption
+Encrypt specific form fields (e.g., credit card numbers) before they reach your server.
+## Example Flow:
+1. User submits a payment form (card_number=1234-5678-9012-3456).
+2. CloudFront encrypts only the card_number field using a public key.
+3. Your backend decrypts it with the private key.
+
+### Use Case:
+PCI-compliant e-commerce checkout (extra security for sensitive data).
+
+## Cache Invalidation
+What? Force CloudFront to fetch fresh content before the TTL expires.
+
+## Cost:
+- First 1,000 paths/month → Free
+- Additional → $0.005 per path
+
+**Pro Tip:**
+- Use versioned filenames (e.g., styles-v2.css) to avoid invalidations.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
