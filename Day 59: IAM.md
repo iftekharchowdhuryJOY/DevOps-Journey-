@@ -172,3 +172,8 @@ Policy:
 -   **Condition keys** → especially MFA (`aws:MultiFactorAuthPresent`), source IP (`aws:SourceIp`), request tags.
     
 -   **Permissions boundaries vs SCPs** (know the difference conceptually).
+
+
+
+
+
