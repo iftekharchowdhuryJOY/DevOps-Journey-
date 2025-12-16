@@ -1,79 +1,81 @@
-AWS S3 — the architect’s mental model
+# Day 64: AWS S3 — The Architect's Mental Model
 
-One sentence truth:
-S3 is infinitely scalable object storage, optimized for durability, not low latency.
+## One Sentence Truth
+> S3 is infinitely scalable object storage, optimized for durability, not low latency.
 
-Objects live in buckets
+### Core Concepts
+- Objects live in **buckets**
+- Buckets live in **regions**
+- Objects are **immutable by default**
+- Everything is **API-driven**
 
-Buckets live in regions
+---
 
-Objects are immutable by default
-
-Everything is API-driven
-
-1. What is S3 (plain English)
+## 1. What is S3 (Plain English)
 
 Think of S3 as:
+- A global hard drive
+- That never runs out of space
+- Never loses data (11 nines durability)
+- But is **not a filesystem**
 
-A global hard drive
+> You don't "mount" S3. You **PUT, GET, DELETE** objects.
 
-That never runs out of space
+---
 
-Never loses data (11 nines durability)
+## 2. Real-Life Use Cases (How Companies Actually Use It)
 
-But is not a filesystem
+| Use Case | Who Uses It |
+|----------|-------------|
+| Static website hosting | Startups, landing pages |
+| App assets (images, videos) | Almost every SaaS |
+| Data lake | Netflix, Airbnb |
+| Backups | Everyone sane |
+| Logs (ALB, CloudTrail) | Security teams |
+| ML training data | AI companies |
+| Cross-region DR | Enterprises |
 
-You don’t “mount” S3.
-You PUT, GET, DELETE objects.
+### Rule of Thumb
+👉 **If data must survive disasters, it belongs in S3.**
 
-2. Real-life use cases (how companies actually use it)
-Use case	Who uses it
-Static website hosting	Startups, landing pages
-App assets (images, videos)	Almost every SaaS
-Data lake	Netflix, Airbnb
-Backups	Everyone sane
-Logs (ALB, CloudTrail)	Security teams
-ML training data	AI companies
-Cross-region DR	Enterprises
+---
 
-Rule of thumb:
-👉 If data must survive disasters, it belongs in S3.
-
-3. S3 in system design
+## 3. S3 in System Design
 
 S3 usually sits here:
 
+```
 User
  ↓
 CloudFront
  ↓
 S3  ←→  Lambda / Athena / Glue
-
+```
 
 Or:
 
+```
 App → S3 (uploads)
 App → DynamoDB (metadata)
+```
 
+### What S3 is NOT
+- ❌ Not a database
+- ❌ Not for millisecond reads (unless cached)
+- ❌ Not transactional
 
-What S3 is NOT
+---
 
-Not a database
+## SECURITY (This Is Where People Fail Exams and Production)
 
-Not for millisecond reads (unless cached)
+### 2. S3 Security – Bucket Policy (Console, Hands-On Concept)
 
-Not transactional
+**Bucket policy** = resource-based policy
 
-SECURITY (this is where people fail exams and production)
-2. S3 security – Bucket Policy (console, hands-on concept)
+It answers: *"Who can access THIS bucket?"*
 
-Bucket policy = resource-based policy
-
-It answers:
-
-“Who can access THIS bucket?”
-
-Simple example (public read – DON’T DO THIS IN PROD)
+#### Simple Example (Public Read – DON'T DO THIS IN PROD)
+```json
 {
   "Version": "2012-10-17",
   "Statement": [{
@@ -83,338 +85,291 @@ Simple example (public read – DON’T DO THIS IN PROD)
     "Resource": "arn:aws:s3:::my-bucket/*"
   }]
 }
+```
 
-Reality check
+#### Reality Check
+- **IAM policy** → attached to users/roles
+- **Bucket policy** → attached to bucket
+- **Both must allow**
 
-IAM policy → attached to users/roles
+---
 
-Bucket policy → attached to bucket
+### 3. Advanced Bucket Policies (Exam Gold)
 
-Both must allow
-
-3. Advanced bucket policies (exam gold)
-Enforce HTTPS only
+#### Enforce HTTPS Only
+```json
 "Condition": {
   "Bool": { "aws:SecureTransport": "false" }
 }
+```
 
-Restrict to VPC endpoint
+#### Restrict to VPC Endpoint
+```json
 "Condition": {
   "StringEquals": {
     "aws:sourceVpce": "vpce-123"
   }
 }
+```
 
-Allow cross-account access
+#### Allow Cross-Account Access
+```json
 "Principal": {
   "AWS": "arn:aws:iam::ACCOUNT_ID:root"
 }
+```
 
+> **Production truth:** Most breaches = bad bucket policies.
 
-Production truth:
-Most breaches = bad bucket policies.
+---
 
-4. S3 Versioning
+## 4. S3 Versioning
 
-What it does
+### What It Does
+- Keeps multiple versions of objects
+- Deletes become delete markers
 
-Keeps multiple versions of objects
-
-Deletes become delete markers
-
-Why it exists
-
+### Why It Exists
 Protection from:
+- Accidental deletes
+- Ransomware
+- Bad deployments
 
-Accidental deletes
-
-Ransomware
-
-Bad deployments
-
-Costs
-
+### Costs
 You pay for every version
 
-Best practice
+### Best Practice
+- Enable versioning
+- Combine with lifecycle rules
 
-Enable versioning
+---
 
-Combine with lifecycle rules
+## 5. Troubleshooting S3 (Real-World)
 
-5. Troubleshooting S3 (real-world)
-Symptom	Cause
-AccessDenied	IAM + bucket policy mismatch
-403 via CloudFront	OAC / OAI misconfigured
-High cost	Old versions + no lifecycle
-Slow uploads	No multipart upload
-Replication failing	IAM role missing permissions
+| Symptom | Cause |
+|---------|-------|
+| AccessDenied | IAM + bucket policy mismatch |
+| 403 via CloudFront | OAC / OAI misconfigured |
+| High cost | Old versions + no lifecycle |
+| Slow uploads | No multipart upload |
+| Replication failing | IAM role missing permissions |
 
-Debug tools:
+### Debug Tools
+- IAM Policy Simulator
+- S3 Access Logs
+- CloudTrail
 
-IAM Policy Simulator
+---
 
-S3 Access Logs
+## 6–7. S3 Replication (Same & Cross-Account)
 
-CloudTrail
+### What It Is
+- Async copy of objects
+- Requires versioning ON
 
-6–7. S3 Replication (same & cross-account)
+### Use Cases
+- DR
+- Compliance
+- Data residency
 
-What it is
-
-Async copy of objects
-
-Requires versioning ON
-
-Use cases
-
-DR
-
-Compliance
-
-Data residency
-
-Cross-account replication
-
+### Cross-Account Replication
 You need:
+- Source bucket policy
+- Destination bucket policy
+- IAM role trusted by S3
 
-Source bucket policy
+> **Exam trap:** replication ≠ backup. Deletes replicate too (unless filtered).
 
-Destination bucket policy
+---
 
-IAM role trusted by S3
-
-Exam trap: replication ≠ backup
-Deletes replicate too (unless filtered).
-
-8. S3 Lifecycle Rules (hands-on logic)
+## 8. S3 Lifecycle Rules (Hands-On Logic)
 
 Lifecycle rules automate storage tier movement.
 
-Typical rule
+### Typical Rule
+```
 Day 0   → S3 Standard
 Day 30  → IA
 Day 90  → Glacier
 Day 365 → Delete
+```
 
+### Cost Reality
+This saves thousands. **Not optional in real companies.**
 
-Cost reality
+---
 
-This saves thousands.
-
-Not optional in real companies.
-
-9. S3 Event Notifications
+## 9. S3 Event Notifications
 
 Trigger actions when objects change.
 
-Targets:
+### Targets
+- Lambda
+- SQS
+- SNS
+- EventBridge
 
-Lambda
-
-SQS
-
-SNS
-
-EventBridge
-
-Example
-
+### Example
 Upload image → Lambda resizes → saves thumbnail
 
-Limitation
+### Limitation
+No retries. Use SQS for durability.
 
-No retries
+---
 
-Use SQS for durability
+## 10. S3 Performance
 
-10. S3 Performance
+### Facts
+- Unlimited throughput
+- Prefix-based scaling no longer needed (old myth)
 
-Facts:
+### Optimizations
+- Multipart uploads
+- CloudFront in front
+- Byte-range GETs
 
-Unlimited throughput
+---
 
-Prefix-based scaling no longer needed (old myth)
+## 11–12. S3 Batch Operations
 
-Optimizations:
-
-Multipart uploads
-
-CloudFront in front
-
-Byte-range GETs
-
-11–12. S3 Batch Operations
-
-What
-
+### What
 Perform actions on millions of objects
 
-Actions:
+### Actions
+- Copy
+- Delete
+- Restore from Glacier
+- Invoke Lambda
 
-Copy
+### Use Cases
+- Encrypt old data
+- Change ACLs
+- Bulk restore
 
-Delete
+Driven by **S3 Inventory report**
 
-Restore from Glacier
+---
 
-Invoke Lambda
-
-Use cases
-
-Encrypt old data
-
-Change ACLs
-
-Bulk restore
-
-Driven by S3 Inventory report
-
-13. S3 Inventory
+## 13. S3 Inventory
 
 Daily/weekly CSV or Parquet report:
+- Object size
+- Storage class
+- Encryption
+- Replication status
 
-Object size
+### Feeds
+- Athena
+- Batch Operations
+- Cost analysis
 
-Storage class
+---
 
-Encryption
-
-Replication status
-
-Feeds:
-
-Athena
-
-Batch Operations
-
-Cost analysis
-
-14–15. Multipart Upload (deep dive)
+## 14–15. Multipart Upload (Deep Dive)
 
 Used when object > 100 MB (mandatory at 5 GB+).
 
-Flow:
+### Flow
+1. Initiate upload
+2. Upload parts in parallel
+3. Complete upload
 
-Initiate upload
+### Why It Matters
+- Faster
+- Resumable
+- More reliable
 
-Upload parts in parallel
+---
 
-Complete upload
+## 16–17. MFA Delete
 
-Why it matters
-
-Faster
-
-Resumable
-
-More reliable
-
-16–17. MFA Delete
-
-What
-
+### What
 Requires MFA to:
+- Delete objects
+- Disable versioning
 
-Delete objects
+### Truth
+- Rarely used
+- Root-only
+- Operationally painful
+- But exam loves it
 
-Disable versioning
+---
 
-Truth
-
-Rarely used
-
-Root-only
-
-Operationally painful
-
-But exam loves it.
-
-18 & 22. S3 Server Access Logs
+## 18 & 22. S3 Server Access Logs
 
 Logs every request:
-
-Who accessed
-
-From where
-
-What action
+- Who accessed
+- From where
+- What action
 
 Stored in another bucket
 
-Cost warning
+> **Cost warning:** Logs generate logs. Use lifecycle rules.
 
-Logs generate logs
+---
 
-Use lifecycle rules
+## 19. Glacier Vault Lock vs Object Lock
 
-19. Glacier Vault Lock vs Object Lock
-Feature	Purpose
-Object Lock	WORM for S3
-Vault Lock	WORM for Glacier
+| Feature | Purpose |
+|---------|---------|
+| Object Lock | WORM for S3 |
+| Vault Lock | WORM for Glacier |
 
-Used for:
+### Used For
+- Finance
+- Healthcare
+- Legal compliance
 
-Finance
+### Modes
+- Governance
+- Compliance (even root can't delete)
 
-Healthcare
+---
 
-Legal compliance
+## 20. S3 VPC Endpoints
 
-Modes:
+### Why
+- Private access to S3
+- No internet
+- No NAT costs
 
-Governance
+### Types
+- Gateway endpoint (S3, DynamoDB)
+- Attached to route tables
+- Enterprise default
 
-Compliance (even root can’t delete)
+---
 
-20. S3 VPC Endpoints
+## 21. IAM Access Analyzer for S3
 
-Why
+### Answers
+*"Is this bucket accessible publicly or cross-account?"*
 
-Private access to S3
+### Finds
+- Unintended access
+- Shadow sharing
 
-No internet
+---
 
-No NAT costs
+## 25. S3 Encryption (Very Important)
 
-Types:
+### At Rest
+- **SSE-S3** (default)
+- **SSE-KMS** (most common)
+- **SSE-C** (rare)
 
-Gateway endpoint (S3, DynamoDB)
+### In Transit
+- **HTTPS (TLS)**
 
-Attached to route tables
-
-Enterprise default
-
-21. IAM Access Analyzer for S3
-
-Answers:
-
-“Is this bucket accessible publicly or cross-account?”
-
-Finds:
-
-Unintended access
-
-Shadow sharing
-
-25. S3 Encryption (very important)
-At rest
-
-SSE-S3 (default)
-
-SSE-KMS (most common)
-
-SSE-C (rare)
-
-In transit
-
-HTTPS (TLS)
-
-Best practice
-
+### Best Practice
 SSE-KMS + bucket policy enforcing encryption
 
-Terraform mental skeleton (simplified)
+---
+
+## Terraform Mental Skeleton (Simplified)
+
+```hcl
 resource "aws_s3_bucket" "this" {
   bucket = "my-prod-bucket"
 }
@@ -425,21 +380,18 @@ resource "aws_s3_bucket_versioning" "v" {
     status = "Enabled"
   }
 }
+```
 
-Final truth (mentor moment)
+---
+
+## Final Truth (Mentor Moment)
 
 S3 is:
+- Simple on the surface
+- Ruthless underneath
 
-Simple on the surface
-
-Ruthless underneath
-
-People lose money, data, and jobs by:
-
-Ignoring lifecycle rules
-
-Writing sloppy bucket policies
-
-Forgetting replication deletes
-
-Logging without cleanup
+### People Lose Money, Data, and Jobs By:
+- Ignoring lifecycle rules
+- Writing sloppy bucket policies
+- Forgetting replication deletes
+- Logging without cleanup
