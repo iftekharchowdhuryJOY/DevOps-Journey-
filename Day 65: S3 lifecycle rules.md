@@ -1,276 +1,245 @@
+# Day 65: S3 Lifecycle Rules
+
+## The Core Concept
+
 S3 Lifecycle rules are automated policies that decide how long data lives, where it lives, and when it dies.
 
-First: the mental model (burn this in)
+---
+
+## First: The Mental Model (Burn This In)
 
 Every object in S3 goes through a life:
 
+```
 Born → Used → Rarely used → Archived → Deleted
+```
 
+Lifecycle rules move objects along that path **automatically**.
 
-Lifecycle rules move objects along that path automatically.
+> Humans forget. Policies don't.
 
-Humans forget.
-Policies don’t.
+---
 
-What lifecycle rules can do (capabilities)
+## What Lifecycle Rules Can Do (Capabilities)
 
 Lifecycle rules can:
 
-Transition objects
+### 1. Transition Objects
+- Standard → IA
+- IA → Glacier
+- Glacier → Deep Archive
 
-Standard → IA
+### 2. Expire Objects
+- Permanent deletion after N days
 
-IA → Glacier
+### 3. Handle Versions
+- Delete old versions
+- Keep only last N versions
 
-Glacier → Deep Archive
+### 4. Clean Up Failed Multipart Uploads
+- Silent cost killer if ignored
 
-Expire objects
+---
 
-Permanent deletion after N days
+## Storage Classes (Why Lifecycle Exists)
 
-Handle versions
+Let's speak plainly.
 
-Delete old versions
+| Class | Cost | Speed | Purpose |
+|-------|------|-------|---------|
+| Standard | $$ | Fast | Active data |
+| IA | $ | Fast (retrieval fee) | Rarely accessed |
+| Glacier | $ | Slow (minutes–hours) | Archive |
+| Deep Archive | ¢ | Very slow (12–48h) | Legal cold storage |
 
-Keep only last N versions
+**Lifecycle rules move data down this ladder.**
 
-Clean up failed multipart uploads
+---
 
-Silent cost killer if ignored
+## Real-Life Example #1 — Startup SaaS (The Most Common Case)
 
-Storage classes (why lifecycle exists)
-
-Let’s speak plainly.
-
-Class	Cost	Speed	Purpose
-Standard	$$$	Fast	Active data
-IA	$$	Fast (retrieval fee)	Rarely accessed
-Glacier	$	Slow (minutes–hours)	Archive
-Deep Archive	¢	Very slow (12–48h)	Legal cold storage
-
-Lifecycle rules move data down this ladder.
-
-Real-life example #1 — Startup SaaS (the most common case)
-Scenario
-
+### Scenario
 A startup runs:
+- A web app
+- User uploads images and documents
+- Growth is fast, money is not
 
-A web app
+### Data Reality
+- **New files** → accessed often
+- **30–90 days later** → almost never accessed
+- **1 year later** → basically dead
 
-User uploads images and documents
-
-Growth is fast, money is not
-
-Data reality
-
-New files → accessed often
-
-30–90 days later → almost never accessed
-
-1 year later → basically dead
-
-Lifecycle strategy
+### Lifecycle Strategy
+```
 Day 0     → S3 Standard
 Day 30    → S3 IA
 Day 180   → Glacier
 Day 365   → Delete
+```
 
-Why this works
+### Why This Works
+- App stays fast
+- Costs drop silently
+- No engineer touches it again
 
-App stays fast
+**This alone can cut S3 bills by 60–80%.**
 
-Costs drop silently
+---
 
-No engineer touches it again
+## Real-Life Example #2 — Logs (Enterprises Love This)
 
-This alone can cut S3 bills by 60–80%.
+### Scenario
+- ALB logs
+- CloudTrail logs
+- Application logs
 
-Real-life example #2 — Logs (enterprises love this)
-Scenario
+### Reality
+- 99% never read
+- Kept for audits
+- Accessed only during incidents
 
-ALB logs
-
-CloudTrail logs
-
-Application logs
-
-Reality
-
-99% never read
-
-Kept for audits
-
-Accessed only during incidents
-
-Lifecycle strategy
+### Lifecycle Strategy
+```
 Day 0    → Standard
 Day 7    → IA
 Day 30   → Glacier
 Day 365  → Delete (or Deep Archive if regulated)
+```
 
-Why companies do this
+### Why Companies Do This
+- Compliance satisfied
+- Auditors happy
+- Storage bill sane
 
-Compliance satisfied
+---
 
-Auditors happy
+## Real-Life Example #3 — Versioned Buckets (Critical)
 
-Storage bill sane
+**This is where beginners bleed money.**
 
-Real-life example #3 — Versioned buckets (critical)
+### Problem
+- Versioning enabled
+- Old versions accumulate
+- Deleted objects still cost money
 
-This is where beginners bleed money.
+### Lifecycle Fix
+- Keep last 3 versions
+- Delete older versions after 30 days
 
-Problem
+> Without this rule, versioning is a financial leak.
 
-Versioning enabled
+---
 
-Old versions accumulate
-
-Deleted objects still cost money
-
-Lifecycle fix
-
-Keep last 3 versions
-
-Delete older versions after 30 days
-
-Without this rule, versioning is a financial leak.
-
-How GOOD companies think about lifecycle
+## How GOOD Companies Think About Lifecycle
 
 This is important.
 
-Startups
+### Startups
+- Aggressive deletion
+- Short retention
+- Optimize for survival
 
-Aggressive deletion
+### Scale-ups
+- Tiered storage
+- Cost dashboards
+- Product-aware rules
 
-Short retention
+### Enterprises
+- Compliance-driven
+- Separate rules per data type
+- Legal holds override lifecycle
 
-Optimize for survival
+**Lifecycle rules are designed with legal + finance + engineering together.**
 
-Scale-ups
+---
 
-Tiered storage
+## Lifecycle Filters (How Rules Stay Sane)
 
-Cost dashboards
-
-Product-aware rules
-
-Enterprises
-
-Compliance-driven
-
-Separate rules per data type
-
-Legal holds override lifecycle
-
-Lifecycle rules are designed with legal + finance + engineering together.
-
-Lifecycle filters (how rules stay sane)
-
-Rules don’t have to apply to everything.
+Rules don't have to apply to everything.
 
 They can target:
+- **Prefixes** (`logs/`, `uploads/`)
+- **Tags** (`env=prod`, `type=backup`)
+- **Object size**
 
-Prefixes (logs/, uploads/)
+### Example Thinking
+*"Only move logs, not user uploads."*
 
-Tags (env=prod, type=backup)
+**This is how grown-ups avoid accidents.**
 
-Object size
+---
 
-Example thinking:
+## What Lifecycle Rules Do NOT Do (Important)
 
-“Only move logs, not user uploads.”
+Let's kill myths.
 
-This is how grown-ups avoid accidents.
+- ❌ Not real-time
+- ❌ Not guaranteed to run at exact midnight
+- ❌ Not reversible
+- ❌ Not a backup
+- ❌ Not an access control mechanism
 
-What lifecycle rules do NOT do (important)
+**They are eventually consistent cleanup machines.**
 
-Let’s kill myths.
+---
 
-❌ Not real-time
-❌ Not guaranteed to run at exact midnight
-❌ Not reversible
-❌ Not a backup
-❌ Not an access control mechanism
+## Common Mistakes (I've Seen These in Real Companies)
 
-They are eventually consistent cleanup machines.
+### Mistake #1: No Lifecycle at All
 
-Common mistakes (I’ve seen these in real companies)
-Mistake #1: No lifecycle at all
+**Result:**
+- S3 bill explodes quietly
+- Finance asks questions
+- Engineers scramble
 
-Result:
+### Mistake #2: Archiving Too Early
 
-S3 bill explodes quietly
+**Result:**
+- App reads from Glacier
+- Latency spikes
+- Incident at 2am
 
-Finance asks questions
+### Mistake #3: Forgetting Multipart Uploads
 
-Engineers scramble
+**Result:**
+- Thousands of orphaned parts
+- Invisible cost
+- Nobody knows why
 
-Mistake #2: Archiving too early
+### Mistake #4: Lifecycle + Replication Confusion
 
-Result:
+**Result:**
+- Objects deleted in source
+- Deleted in destination
+- DR compromised
 
-App reads from Glacier
+---
 
-Latency spikes
-
-Incident at 2am
-
-Mistake #3: Forgetting multipart uploads
-
-Result:
-
-Thousands of orphaned parts
-
-Invisible cost
-
-Nobody knows why
-
-Mistake #4: Lifecycle + replication confusion
-
-Result:
-
-Objects deleted in source
-
-Deleted in destination
-
-DR compromised
-
-Lifecycle + business mindset (this is key)
+## Lifecycle + Business Mindset (This Is Key)
 
 Lifecycle rules encode business intent.
 
-You’re answering:
+You're answering:
+- How long is data valuable?
+- When does risk > value?
+- When does storage cost > usefulness?
 
-How long is data valuable?
+**That's architecture. Not configuration.**
 
-When does risk > value?
+---
 
-When does storage cost > usefulness?
-
-That’s architecture. Not configuration.
-
-Final mentor truth
+## Final Mentor Truth
 
 If you:
+- Enable versioning
+- Don't define lifecycle
+- And store logs
 
-Enable versioning
+You're not "secure" or "safe". **You're just postponing pain.**
 
-Don’t define lifecycle
+### Lifecycle Rules Are:
+- Quiet
+- Boring
+- Extremely powerful
 
-And store logs
-
-You’re not “secure” or “safe”.
-You’re just postponing pain.
-
-Lifecycle rules are:
-
-Quiet
-
-Boring
-
-Extremely powerful
-
-They don’t make headlines.
-They make budgets survivable.
+**They don't make headlines. They make budgets survivable.**
